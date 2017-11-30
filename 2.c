@@ -1,10 +1,26 @@
 #include<stdio.h>
-#include<math.h>
+#include<omp.h>
+#include<stdlib.h>
 int main()
 {
-	float b=3.000,a=1.000,c=-5.600,e=0.000;
-	if((b*b-4*a*c)<0){printf("此方程无解");}
-	if((b*b-4*a*c)==0){e = -b/2*a;printf("只有一个解为：%.3lf\n",e);}
-	if((b*b-4*a*c)>0){e=sqrt(b*b-4*a*c);printf("有两个解分别为：%.3lf 和 %.3lf\n",(-b+e)/2*a,(-b-e)/2*a);}
-return 0;
+int i;int j;int z;int x;
+double a[500][500],b[500][500],c[500][500];
+srand(time(NULL));
+#pragma omp parallel for
+for(i=0;i<500;i++)
+for(j=0;j<500;j++)
+{
+a[i][j]=rand()%1000000/1000.0; //产生各个随机数 
+b[i][j]=rand()%1000000/1000.0; //产生各个随机数
+}
+
+#pragma omp parallel for private(z)
+for(i=0;i<500;i++)
+for(j=0;j<500;j++)
+{
+for(z=0;z<500;z++)
+{
+c[i][j]+=a[i][z]*b[z][j];
+}
+}
 }
