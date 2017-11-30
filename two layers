@@ -41,5 +41,5 @@ for i in range(50):
                   
 print(sess.run(w_r))
 print(sess.run(b_r))
-print(sess.run(y,feed_dict={x:[[1.0,0.834434]]}))
+print(sess.run(y,feed_dict={x:[[1.0,3.0]]}))
 sess.close()

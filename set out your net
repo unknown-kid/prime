@@ -1,0 +1,64 @@
+import tensorflow as tf
+import numpy as np
+from numpy.random import RandomState
+#L2正则化传递损失函数给losses集合
+def get_weight(shape,read):
+         #生成变量后面函数返回
+         var = tf.Variable(tf.random_normal(shape, dtype = tf.float32 , stddev=2))
+         #L2正则化传递损失函数给losses集合
+         tf.add_to_collection('losses',tf.contrib.layers.l2_regularizer(read) (var))
+         return var
+#设置训练集
+dataset_size = 1000
+rdm = RandomState(2)
+X = rdm.rand(dataset_size,2)*100
+print(X)
+Y = [[x1 + x2 ]for (x1,x2) in X]
+#获取层数和每层的节点数量
+x = tf.placeholder(tf.float32,shape=(1,2))
+t = tf.placeholder(tf.float32,shape=(None,1))
+layer_num = []
+w = []
+d = []
+layer_num.append(str(x.shape[1]))
+for i in range(1,10000):
+         layer_num.append(input('请输入你要建立第'+ str(i) + '层的网络的节点数(输入stop停止)：'))
+         if layer_num[i] == 's':
+                  layer_num.pop()
+                  layer_num.append('1')
+                  break
+layer_cs = len(layer_num)
+#维护前向传播时最深的节点，开始的时候是输入层
+cur_layer = x
+#设置当前层节点数
+in_dimension = int(layer_num[0])
+#连接全连接的神经网络
+for i in range(1,layer_cs):
+         #设置当前层的输出层的节点数目
+         out_dimension = int(layer_num[i])
+         w.append(get_weight([in_dimension,out_dimension],0.001))
+         d.append(tf.Variable(tf.constant(0.1, shape = [out_dimension])))
+         y = tf.nn.relu(tf.matmul(cur_layer,w[i-1]) + d[i-1])
+         in_dimension = int(layer_num[i])
+         cur_layer = y
+mse_loss = tf.reduce_mean(tf.square(t-y))
+tf.add_to_collection('losses',mse_loss)
+loss = tf.add_n(tf.get_collection('losses'))
+train_step = tf.train.AdamOptimizer(0.001).minimize(loss)
+#建立会话来运行TensorFlow
+sess = tf.InteractiveSession()
+#初始化所有变量的值
+tf.global_variables_initializer().run()
+#循环T次来进行训练
+for i in range(100):
+         print(i+1)
+         for v in range(50):
+                  for j in range(999):
+                           a = j
+                           sess.run(train_step,feed_dict={x:X[a:a+1],t:Y[a:a+1]})
+for i in range(layer_cs-1):
+         print(sess.run(w[i]))
+         print(sess.run(d[i]))
+print('最终预测值为：'+str((sess.run(y,feed_dict={x:[[1.0,3.0]]})[0])[0]))
+sess.close()
+         
